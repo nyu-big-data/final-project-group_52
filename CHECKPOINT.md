@@ -13,6 +13,7 @@ the result of baseline model for small dataset is in baseline_model_small.ipynb 
 the result of baseline model for large dataset is in baseline_model_large.ipynb file
 
 ## Recommendation Model
+we first run the jupyter notebook from above to save the splitted data into scratch folder, then put the files into hdfs for spark usage.
 
 we run hyper tuning on the ALS model and found that for the when rank is 5 and regParam is 1, the evalution critierion is the best
 
