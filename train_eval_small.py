@@ -15,8 +15,6 @@ from pyspark.ml.recommendation import ALS
 from pyspark.sql import Row
 from pyspark.mllib.evaluation import RankingMetrics
 from pyspark.sql.functions import collect_set, flatten
-from array import array
-
 
 def main(spark, netID):
     '''Main routine for Lab Solutions
