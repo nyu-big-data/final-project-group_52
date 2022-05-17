@@ -41,14 +41,14 @@ def main(spark, netID):
                                         rating=float(p[2]), timestamp=p[3]))
     test_full = spark.createDataFrame(testRDD)
 
-    for rank in [10]:
-        for regParam in [0.01]:
+    for rank in [5]:
+        for regParam in [0.01, 0.05]:
             print(f"rank={rank}, regParam={regParam}")
 
             als = ALS(rank=rank, maxIter=5, regParam=regParam, userCol="userId", itemCol="movieId", ratingCol="rating",
                         nonnegative=True, implicitPrefs=True, coldStartStrategy="drop", seed=42)
             model = als.fit(train_full)
-            model.save("als_model")
+            # model.save(f"als_model_full_rank{rank}_reg{regParam}")
 
             # recommend 100 items for all users
             predictions = model.recommendForAllUsers(100)

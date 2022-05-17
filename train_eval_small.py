@@ -41,13 +41,18 @@ def main(spark, netID):
                                         rating=float(p[2]), timestamp=p[3]))
     test_small = spark.createDataFrame(testRDD)
 
+    best_rank = 0
+    best_regParam = 0
+    best_MAP = 0
+
     for rank in [5]:
-        for regParam in [1]:
+        for regParam in [0.05, 0.1, 0.5]:
             print(f"rank={rank}, regParam={regParam}")
 
             als = ALS(rank=rank, maxIter=5, regParam=regParam, userCol="userId", itemCol="movieId", ratingCol="rating",
                         nonnegative=True, implicitPrefs=True, coldStartStrategy="drop", seed=42)
             model = als.fit(train_small)
+            # model.save("als_model_small")
 
             # recommend 100 items for all users
             predictions = model.recommendForAllUsers(100)
@@ -66,6 +71,10 @@ def main(spark, netID):
             print(f"MAP is {metrics.meanAveragePrecision}")
             print(f"precision at 100 is {metrics.precisionAt(100)}")
             print(f"ndcg at 100 is {metrics.ndcgAt(100)}")
+            if metrics.meanAveragePrecision > best_MAP:
+                best_MAP = metrics.meanAveragePrecision
+                best_rank = rank
+                best_regParam = regParam
 
             # test predictions on test dataset
             actual_movie_id = test_small.groupby("userId").agg(collect_set("movieId").alias('actual_movie_id'))
@@ -79,6 +88,9 @@ def main(spark, netID):
             print(f"MAP is {metrics.meanAveragePrecision}")
             print(f"precision at 100 is {metrics.precisionAt(100)}")
             print(f"ndcg at 100 is {metrics.ndcgAt(100)}")
+    
+    print(f"best rank is {best_rank}")
+    print(f"best regParam is {best_regParam}")
 
 
     spark.stop()
@@ -87,8 +99,8 @@ def main(spark, netID):
 # Only enter this block if we're in main
 if __name__ == "__main__":
 
-    config = pyspark.SparkConf().setAll([('spark.executor.memory', '16g'),
-                                        ('spark.driver.memory', '16g'),
+    config = pyspark.SparkConf().setAll([('spark.executor.memory', '32g'),
+                                        ('spark.driver.memory', '32g'),
                                         ('spark.blacklist.enabled', False)])
     
     # Create the spark session object
